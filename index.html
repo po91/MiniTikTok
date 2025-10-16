@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniTikTok – PomidoruwkaVR</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎬 MiniTikTok</h1>
+  </header>
+
+  <main>
+    <!-- Sekcja rejestracja/login -->
+    <section id="authSection">
+      <h2>Rejestracja</h2>
+      <input type="text" id="regUsername" placeholder="Nick użytkownika" />
+      <input type="email" id="regEmail" placeholder="Gmail" />
+      <input type="password" id="regPassword" placeholder="Hasło" />
+      <button id="regBtn">Zarejestruj się</button>
+
+      <h2>Login</h2>
+      <input type="email" id="loginEmail" placeholder="Gmail" />
+      <input type="password" id="loginPassword" placeholder="Hasło" />
+      <button id="loginBtn">Zaloguj</button>
+    </section>
+
+    <!-- Główna strona -->
+    <section id="mainContent">
+      <p id="welcomeMsg"></p>
+      <button id="logoutBtn" style="display:none;">Wyloguj</button>
+
+      <section class="add-video" id="addVideoSection" style="display:none;">
+        <h2>Dodaj film TikTok</h2>
+        <input type="text" id="title" placeholder="Tytuł filmu" />
+        <input type="text" id="url" placeholder="Link TikTok" />
+        <button id="addBtn">Dodaj</button>
+      </section>
+
+      <section class="search-video">
+        <h2>Wyszukaj filmy</h2>
+        <input type="text" id="searchInput" placeholder="Wpisz fragment tytułu..." />
+      </section>
+
+      <section id="videoList" class="video-list"></section>
+    </section>
+  </main>
+
+  <script>
+    // ==================== Ustawienia Ownera ====================
+    const ownerNick = "PomidoruwkaVR";
+    const verificationMark = "✅";
+
+    // ==================== LOGOWANIE I REJESTRACJA ====================
+    const regBtn = document.getElementById("regBtn");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const authSection = document.getElementById("authSection");
+    const mainContent = document.getElementById("mainContent");
+    const welcomeMsg = document.getElementById("welcomeMsg");
+    const addVideoSection = document.getElementById("addVideoSection");
+
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+
+    function updateLoginState() {
+      if(currentUser) {
+        authSection.style.display = "none";
+        addVideoSection.style.display = "block";
+        logoutBtn.style.display = "inline-block";
+        welcomeMsg.textContent = `Witaj, ${currentUser.username}!`;
+      } else {
+        authSection.style.display = "block";
+        addVideoSection.style.display = "none";
+        logoutBtn.style.display = "none";
+        welcomeMsg.textContent = "";
+      }
+    }
+
+    updateLoginState();
+
+    // Rejestracja
+    regBtn.addEventListener("click", () => {
+      const username = document.getElementById("regUsername").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+
+      if (!username || !email || !password) return alert("Wypełnij wszystkie pola!");
+      if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) return alert("Ten Gmail jest już użyty!");
+      if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) return alert("Ten nick jest już zajęty!");
+
+      const newUser = { username, email, password };
+      users.push(newUser);
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Rejestracja udana! Teraz możesz się zalogować.");
+
+      document.getElementById("regUsername").value = "";
+      document.getElementById("regEmail").value = "";
+      document.getElementById("regPassword").value = "";
+    });
+
+    // Login
+    loginBtn.addEventListener("click", () => {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) return alert("Niepoprawny Gmail lub hasło!");
+
+      currentUser = user;
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      updateLoginState();
+
+      document.getElementById("loginEmail").value = "";
+      document.getElementById("loginPassword").value = "";
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      currentUser = null;
+      localStorage.removeItem("currentUser");
+      updateLoginState();
+    });
+
+    // ==================== MINI TIKTOK ====================
+    const addBtn = document.getElementById("addBtn");
+    const videoList = document.getElementById("videoList");
+    const searchInput = document.getElementById("searchInput");
+
+    let videos = JSON.parse(localStorage.getItem('videos')) || [];
+
+    function saveVideos() {
+      localStorage.setItem('videos', JSON.stringify(videos));
+    }
+
+    function convertTikTokLink(url) {
+      if (!url.includes("tiktok.com")) return null;
+      const match = url.match(/tiktok\.com\/@([^\/]+)\/video\/(\d+)/);
+      if (!match) return null;
+      return { user: match[1], id: match[2], cite: `https://www.tiktok.com/@${match[1]}/video/${match[2]}` };
+    }
+
+    function renderVideos(filteredVideos = null) {
+      const list = filteredVideos || videos;
+      videoList.innerHTML = "";
+
+      list.forEach(v => {
+        const videoDiv = document.createElement("div");
+        videoDiv.classList.add("video");
+
+        // Znak weryfikacji dla ownera
+        const displayUser = v.user === ownerNick ? v.user + " " + verificationMark : v.user;
+
+        const embedCode = `
+          <blockquote class="tiktok-embed" cite="${v.cite}" data-video-id="${v.id}" style="max-width: 500px;min-width: 325px;">
+            <section></section>
+          </blockquote>
+        `;
+
+        // Przycisk usuń tylko dla ownera
+        const deleteBtn = (currentUser && currentUser.username === ownerNick)
+          ? `<button onclick="deleteVideo('${v.id}')">Usuń film</button>` 
+          : "";
+
+        videoDiv.innerHTML = `
+          <h3>${v.title} - <strong>${displayUser}</strong> ${deleteBtn}</h3>
+          ${embedCode}
+          <div class="comments">
+            <h4>Komentarze:</h4>
+            <ul id="comments-${v.id}">
+              ${v.comments.map(c => `<li><strong>${c.user === ownerNick ? c.user + ' ✅' : c.user}:</strong> ${c.text}</li>`).join("")}
+            </ul>
+            ${currentUser ? `
+              <div class="comment-input">
+                <input type="text" id="comment-${v.id}" placeholder="Napisz komentarz..." />
+                <button onclick="addComment('${v.id}')">➕</button>
+              </div>` : ""
+            }
+          </div>
+        `;
+        videoList.appendChild(videoDiv);
+      });
+
+      if (!document.getElementById('tiktok-script')) {
+        const tiktokScript = document.createElement('script');
+        tiktokScript.id = 'tiktok-script';
+        tiktokScript.src = "https://www.tiktok.com/embed.js";
+        document.body.appendChild(tiktokScript);
+      }
+
+      saveVideos();
+    }
+
+    addBtn.addEventListener("click", () => {
+      if (!currentUser) return alert("Musisz być zalogowany!");
+      const title = document.getElementById("title").value.trim();
+      const urlRaw = document.getElementById("url").value.trim();
+      if (!title || !urlRaw) return alert("Podaj tytuł i link TikTok!");
+
+      const linkData = convertTikTokLink(urlRaw);
+      if (!linkData) return alert("Niepoprawny link TikTok!");
+
+      const video = { id: linkData.id, title, user: currentUser.username, cite: linkData.cite, comments: [] };
+      videos.unshift(video);
+      renderVideos();
+
+      document.getElementById("title").value = "";
+      document.getElementById("url").value = "";
+    });
+
+    window.addComment = function (id) {
+      const input = document.getElementById(`comment-${id}`);
+      const text = input.value.trim();
+      if (!text) return;
+      if (!currentUser) return alert("Musisz być zalogowany!");
+      const video = videos.find(v => v.id === id);
+      video.comments.push({ user: currentUser.username, text });
+      renderVideos();
+      input.value = "";
+    };
+
+    window.deleteVideo = function(id) {
+      if (!currentUser || currentUser.username !== ownerNick) return alert("Tylko owner może usuwać filmy!");
+      videos = videos.filter(v => v.id !== id);
+      renderVideos();
+    };
+
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.trim().toLowerCase();
+      const filtered = query ? videos.filter(v => v.title.toLowerCase().includes(query)) : null;
+      renderVideos(filtered);
+    });
+
+    // Początkowe renderowanie filmów
+    renderVideos();
+  </script>
+</body>
+</html>
