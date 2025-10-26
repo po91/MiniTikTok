@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniTikTok</title>
+  <style>
+    body {
+      background-color: #ed1c24;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background-color: black;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      padding: 10px 0;
+    }
+
+    .mini {
+      background-color: black;
+      color: white;
+      padding: 0 8px;
+      border-radius: 4px;
+    }
+
+    .tiktok {
+      background-color: orange;
+      color: black;
+      padding: 0 8px;
+      border-radius: 4px;
+    }
+
+    .info-box {
+      background-color: orange;
+      color: black;
+      margin: 20px auto;
+      width: 90%;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: left;
+      max-width: 800px;
+    }
+
+    .info-box h3 {
+      color: #00aaff;
+      margin: 0 0 10px 0;
+    }
+
+    .info-box p {
+      background-color: black;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .video-card {
+      background-color: orange;
+      border-radius: 10px;
+      margin: 20px auto;
+      padding: 10px;
+      width: 90%;
+      max-width: 800px;
+      text-align: left;
+      display: none;
+    }
+
+    .video-card.active {
+      display: block;
+    }
+
+    .video-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: black;
+      margin-bottom: 10px;
+    }
+
+    iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: none;
+      border-radius: 8px;
+    }
+
+    .show-more {
+      background-color: #00aaff;
+      color: white;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin: 20px auto;
+      transition: background 0.3s;
+    }
+
+    .show-more:hover {
+      background-color: #0088cc;
+    }
+
+    footer {
+      color: #00aaff;
+      font-size: 20px;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+<body>
+  <header><span class="mini">Mini</span><span class="tiktok">TikTok</span></header>
+
+  <div class="info-box">
+    <h3>Od ilu lat jest <span class="mini">Mini</span><span class="tiktok">TikTok</span>?</h3>
+    <p>Ta strona jest od 9 lat, bo te filmy nie uczą niczego ważnego, a czasami to będą śmieszne momenty — czyli od 9 lat.</p>
+  </div>
+
+  <!-- FILM 1 -->
+  <div class="video-card active">
+    <div class="video-title">Film #1</div>
+    <iframe src="https://streamable.com/e/3v8xto" allowfullscreen></iframe>
+  </div>
+
+  <!-- FILM 2 -->
+  <div class="video-card">
+    <div class="video-title">Film #2</div>
+    <iframe src="https://streamable.com/e/WSTAW_TUTAJ_ID_FILMU2" allowfullscreen></iframe>
+  </div>
+
+<!-- FILM 3 -->
+  <div class="video-card">
+    <div class="video-title">Film #3</div>
+    <iframe src="https://streamable.com/e/WSTAW_TUTAJ_ID_FILMU2" allowfullscreen></iframe>
+  </div>
+
+  <button class="show-more" onclick="pokazWiecej()">Pokaż więcej filmów 🎬</button>
+
+  <footer>
+    Pokaż więcej filmów na platformie 
+    <span class="mini">Mini</span><span class="tiktok">TikTok</span>
+  </footer>
+
+  <script>
+    let pokazane = 1;
+    function pokazWiecej() {
+      const filmy = document.querySelectorAll('.video-card');
+      pokazane++;
+      if (pokazane > filmy.length) {
+        alert('Nie ma więcej filmów 😅');
+        return;
+      }
+      filmy[pokazane - 1].classList.add('active');
+    }
+  </script>
+</body>
+</html>
